@@ -77,12 +77,16 @@ def parse_args():
                         type=int,
                         default=100)
 
+    parser.add_argument('--es-timeout',
+                        type=int,
+                        default=60)
+
     return vars(parser.parse_args())
 
 
 def main():
     args = parse_args()
-    es = Elasticsearch(args['elasticsearch_url'])
+    es = Elasticsearch(hosts=args['elasticsearch_url'], timeout=args['es_timeout'])
     solr_itr = SolrRequestIter(args['solr_url'], args['solr_query'], args['rows_per_page'])
     elasticsearch.helpers.bulk(es, SolrEsWrapperIter(args['elasticsearch_index'], args['elasticsearch_index'], solr_itr))
     sys.exit()

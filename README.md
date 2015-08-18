@@ -12,7 +12,7 @@ This will migrate a Solr node to an Elasticsearch index.
 
 ```
 usage: solr-to-es.py [-h] [--solr-query SOLR_QUERY]
-                     [--rows-per-page ROWS_PER_PAGE]
+                     [--rows-per-page ROWS_PER_PAGE] [--es-timeout ES_TIMEOUT]
                      solr_url elasticsearch_url elasticsearch_index doc_type
 ```
 
@@ -33,3 +33,5 @@ solr-to-es.py localhost:8983/solr/node localhost:9200 es_index solr_docs
 `--solr-query` defaults to `*:*`
 
 `--rows-per-page` defaults to `100`
+
+`--es-timeout` defaults to `60`
