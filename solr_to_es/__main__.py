@@ -23,16 +23,21 @@ class SolrEsWrapperIter:
 
 
 class SolrRequestIter:
-    def __init__(self, solr_conn, query, rows):
+    def __init__(self, solr_conn, query, **options):
         self.current = 0
         self.query = query
         self.solr_conn = solr_conn
-        self.rows = rows
+        try:
+            self.rows = options['rows']
+            del options['rows']
+        except KeyError:
+            self.rows = 0
+        self.options = options
         self.max = None
         self.docs = None
 
     def __iter__(self):
-        response = self.solr_conn.search(self.query, rows=0)
+        response = self.solr_conn.search(self.query, rows=0, **self.options)
         self.max = response.hits
         return self
 
@@ -45,7 +50,9 @@ class SolrRequestIter:
         if self.docs is None:
             if self.current * self.rows < self.max:
                 self.current += 1
-                response = self.solr_conn.search(self.query, rows=self.rows, start=(self.current - 1) * self.rows)
+                response = self.solr_conn.search(self.query, rows=self.rows,
+                                                 start=(self.current - 1) * self.rows,
+                                                 **self.options)
                 self.docs = iter(response.docs)
                 return self.docs.next()
             else:
@@ -86,7 +93,7 @@ def main():
         args = parse_args()
         es_conn = Elasticsearch(hosts=args['elasticsearch_url'], timeout=args['es_timeout'])
         solr_conn = pysolr.Solr(args['solr_url'])
-        solr_itr = SolrRequestIter(solr_conn, args['solr_query'], args['rows_per_page'])
+        solr_itr = SolrRequestIter(solr_conn, args['solr_query'], rows=args['rows_per_page'])
         es_actions = SolrEsWrapperIter(solr_itr, args['elasticsearch_index'], args['doc_type'])
         elasticsearch.helpers.bulk(es_conn, es_actions)
     except KeyboardInterrupt:
