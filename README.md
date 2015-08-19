@@ -11,9 +11,9 @@ This will migrate a Solr node to an Elasticsearch index.
 ## Usage
 
 ```
-usage: solr-to-es.py [-h] [--solr-query SOLR_QUERY]
-                     [--rows-per-page ROWS_PER_PAGE] [--es-timeout ES_TIMEOUT]
-                     solr_url elasticsearch_url elasticsearch_index doc_type
+usage: solr-to-es [-h] [--solr-query SOLR_QUERY]
+                  [--rows-per-page ROWS_PER_PAGE] [--es-timeout ES_TIMEOUT]
+                  solr_url elasticsearch_url elasticsearch_index doc_type
 ```
 
 The following example will page through all documents on the local Solr node, `node`, and submit them to the local Elasticsearch server in the index `es_index` with a document type of `solr_docs`.
@@ -32,6 +32,6 @@ solr-to-es.py localhost:8983/solr/node localhost:9200 es_index solr_docs
 
 `--solr-query` defaults to `*:*`
 
-`--rows-per-page` defaults to `100`
+`--rows-per-page` defaults to `500`
 
 `--es-timeout` defaults to `60`
