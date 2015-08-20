@@ -7,7 +7,7 @@ except ImportError:
     read_md = lambda f: open(f, 'r').read()
 
 setup(name='solr-to-es',
-      version='0.2',
+      version='0.2.1',
       description='Export Solr Nodes to Elasticsearch Indexes',
       long_description=read_md('README.md'),
       author='Joe Lawson',
