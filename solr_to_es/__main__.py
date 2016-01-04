@@ -22,11 +22,19 @@ class SolrEsWrapperIter:
         return new_doc
 
 
+class InvalidPagingConfigError(RuntimeError):
+    def __init__(self, message):
+        super(RuntimeError, self).__init__(message)
+
+
 class SolrRequestIter:
-    def __init__(self, solr_conn, query, **options):
-        self.current = 0
+    def __init__(self, solr_conn, query, sort, **options):
         self.query = query
         self.solr_conn = solr_conn
+        self.lastCursorMark = ''
+        self.cursorMark = '*'
+        self.sort = sort
+
         try:
             self.rows = options['rows']
             del options['rows']
@@ -42,21 +50,30 @@ class SolrRequestIter:
         return self
 
     def next(self):
-        if self.docs is not None:
-            try:
-                return self.docs.next()
-            except StopIteration:
-                self.docs = None
-        if self.docs is None:
-            if self.current * self.rows < self.max:
-                self.current += 1
-                response = self.solr_conn.search(self.query, rows=self.rows,
-                                                 start=(self.current - 1) * self.rows,
-                                                 **self.options)
-                self.docs = iter(response.docs)
-                return self.docs.next()
-            else:
-                raise StopIteration()
+        try:
+            if self.docs is not None:
+                try:
+                    return self.docs.next()
+                except StopIteration:
+                    self.docs = None
+            if self.docs is None:
+
+                if self.lastCursorMark != self.cursorMark:
+                    response = self.solr_conn.search(self.query, rows=self.rows,
+                                                     cursorMark=self.cursorMark,
+                                                     sort=self.sort,
+                                                     **self.options)
+                    self.docs = iter(response.docs)
+                    self.lastCursorMark = self.cursorMark
+                    self.cursorMark = response.nextCursorMark
+                    return self.docs.next()
+                else:
+                    raise StopIteration()
+        except pysolr.SolrError as e:
+            if "Cursor" in e.message:
+                raise InvalidPagingConfigError(e.message)
+            raise e
+
 
 
 def parse_args():
