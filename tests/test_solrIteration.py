@@ -1,10 +1,10 @@
 from solrTest import SolrIntegrationTest
-from solr_to_es.__main__ import SolrRequestIter, InvalidPagingConfigError
+from solr_to_es.solrSource import SolrDocs, InvalidPagingConfigError
 
 class SolrIterateTest(SolrIntegrationTest):
 
     def test_basic_op(self):
-        solrReq = SolrRequestIter(solr_conn=self.solr_conn, query="*:*", sort='id desc', rows=10)
+        solrReq = SolrDocs(solr_conn=self.solr_conn, query="*:*", sort='id desc', rows=10)
         solrReq = iter(solrReq)
         nextDoc = solrReq.next()
         assert len(nextDoc['catch_line']) > 0
@@ -12,8 +12,7 @@ class SolrIterateTest(SolrIntegrationTest):
         assert len(nextDoc['catch_line']) > 0
 
     def test_bad_sort(self):
-        import pdb; pdb.set_trace()
-        solrReq = SolrRequestIter(solr_conn=self.solr_conn, query="*:*", sort='score desc', rows=10)
+        solrReq = SolrDocs(solr_conn=self.solr_conn, query="*:*", sort='score desc', rows=10)
         try:
             solrReq = iter(solrReq)
             next(solrReq)
