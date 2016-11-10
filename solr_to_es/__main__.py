@@ -68,6 +68,10 @@ def parse_args():
                         type=str,
                         default='*:*')
 
+    parser.add_argument('--solr-fields',
+                        type=str,
+                        default='')
+
     parser.add_argument('elasticsearch_url',
                         type=str)
 
@@ -93,7 +97,8 @@ def main():
         args = parse_args()
         es_conn = Elasticsearch(hosts=args['elasticsearch_url'], timeout=args['es_timeout'])
         solr_conn = pysolr.Solr(args['solr_url'])
-        solr_itr = SolrRequestIter(solr_conn, args['solr_query'], rows=args['rows_per_page'])
+        solr_fields = args['solr_fields'].split() if args['solr_fields'] else ''
+        solr_itr = SolrRequestIter(solr_conn, args['solr_query'], rows=args['rows_per_page'], fl=solr_fields)
         es_actions = SolrEsWrapperIter(solr_itr, args['elasticsearch_index'], args['doc_type'])
         elasticsearch.helpers.bulk(es_conn, es_actions)
     except KeyboardInterrupt:

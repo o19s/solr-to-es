@@ -11,7 +11,7 @@ This will migrate a Solr node to an Elasticsearch index.
 ## Usage
 
 ```
-usage: solr-to-es [-h] [--solr-query SOLR_QUERY]
+usage: solr-to-es [-h] [--solr-query SOLR_QUERY] [--solr-fields COMMA_SEP_FIELDS]
                   [--rows-per-page ROWS_PER_PAGE] [--es-timeout ES_TIMEOUT]
                   solr_url elasticsearch_url elasticsearch_index doc_type
 ```
@@ -31,6 +31,8 @@ solr-to-es.py localhost:8983/solr/node localhost:9200 es_index solr_docs
 `doc_type` is the type of document Elasticsearch should assume you are importing.
 
 `--solr-query` defaults to `*:*`
+
+`--solr-fields` defaults to `` (i.e. all fields)
 
 `--rows-per-page` defaults to `500`
 
