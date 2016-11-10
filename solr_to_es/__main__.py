@@ -3,6 +3,7 @@ import argparse
 from elasticsearch import Elasticsearch
 import elasticsearch.helpers
 import pysolr
+from solrSource import SlowSolrDocs
 
 class SolrEsWrapperIter:
     def __init__(self, solr_itr, es_index, es_type):
@@ -20,43 +21,6 @@ class SolrEsWrapperIter:
         new_doc['_type'] = self.type
         new_doc['_source'] = doc
         return new_doc
-
-
-class SolrRequestIter:
-    def __init__(self, solr_conn, query, **options):
-        self.current = 0
-        self.query = query
-        self.solr_conn = solr_conn
-        try:
-            self.rows = options['rows']
-            del options['rows']
-        except KeyError:
-            self.rows = 0
-        self.options = options
-        self.max = None
-        self.docs = None
-
-    def __iter__(self):
-        response = self.solr_conn.search(self.query, rows=0, **self.options)
-        self.max = response.hits
-        return self
-
-    def next(self):
-        if self.docs is not None:
-            try:
-                return self.docs.next()
-            except StopIteration:
-                self.docs = None
-        if self.docs is None:
-            if self.current * self.rows < self.max:
-                self.current += 1
-                response = self.solr_conn.search(self.query, rows=self.rows,
-                                                 start=(self.current - 1) * self.rows,
-                                                 **self.options)
-                self.docs = iter(response.docs)
-                return self.docs.next()
-            else:
-                raise StopIteration()
 
 
 def parse_args():
@@ -98,7 +62,7 @@ def main():
         es_conn = Elasticsearch(hosts=args['elasticsearch_url'], timeout=args['es_timeout'])
         solr_conn = pysolr.Solr(args['solr_url'])
         solr_fields = args['solr_fields'].split() if args['solr_fields'] else ''
-        solr_itr = SolrRequestIter(solr_conn, args['solr_query'], rows=args['rows_per_page'], fl=solr_fields)
+        solr_itr = SlowSolrDocs(solr_conn, args['solr_query'], rows=args['rows_per_page'], fl=solr_fields)
         es_actions = SolrEsWrapperIter(solr_itr, args['elasticsearch_index'], args['doc_type'])
         elasticsearch.helpers.bulk(es_conn, es_actions)
     except KeyboardInterrupt:
