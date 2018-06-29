@@ -60,7 +60,9 @@ def main():
     try:
         args = parse_args()
         es_conn = Elasticsearch(hosts=args['elasticsearch_url'], timeout=args['es_timeout'])
-        solr_conn = pysolr.Solr(args['solr_url'])
+
+        # Split the solr_url into the root and the request handler
+        solr_conn = pysolr.Solr(args['solr_url'].rsplit('/', 1)[0], search_handler=args['solr_url'].rsplit('/', 1)[-1])
         solr_fields = args['solr_fields'].split() if args['solr_fields'] else ''
         solr_itr = SlowSolrDocs(solr_conn, args['solr_query'], rows=args['rows_per_page'], fl=solr_fields)
         es_actions = SolrEsWrapperIter(solr_itr, args['elasticsearch_index'], args['doc_type'])
