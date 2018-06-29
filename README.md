@@ -38,6 +38,17 @@ solr-to-es.py localhost:8983/solr/node localhost:9200 es_index solr_docs
 
 `--es-timeout` defaults to `60`
 
+
 ## Install
 
 To install you may need to install dependencies via `pip install pyandoc`.  Then run `python setup install` to install the script.
+
+### Demo
+
+```
+docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" elasticsearch
+
+./solr-to-es http://solr.quepid.com/solr/tmdb localhost:9200 es_index solr_docs
+
+```
+_Note: that you will get an 403 Forbidden error from the script, and that is because the solr.quepid.com doesn't allow deep paging, however you will have documents in your ES cluster_.
