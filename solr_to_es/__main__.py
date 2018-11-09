@@ -5,8 +5,9 @@ import elasticsearch.helpers
 import pysolr
 from solrSource import SlowSolrDocs
 
+
 class SolrEsWrapperIter:
-    def __init__(self, solr_itr, es_index, es_type, id_field = None):
+    def __init__(self, solr_itr, es_index, es_type, id_field=None):
         self.index = es_index
         self.type = es_type
         self.id_field = id_field
@@ -16,7 +17,7 @@ class SolrEsWrapperIter:
         return self
 
     def next(self):
-        doc = self.solr_itr.next()
+        doc = next(self.solr_itr)
         new_doc = dict()
         new_doc['_index'] = self.index
         new_doc['_type'] = self.type
@@ -76,7 +77,8 @@ def main():
         solr_conn = pysolr.Solr(args['solr_url'].rsplit('/', 1)[0], search_handler=args['solr_url'].rsplit('/', 1)[-1])
         solr_fields = args['solr_fields'].split() if args['solr_fields'] else ''
         solr_filter = args['solr_filter'] if args['solr_filter'] else ''
-        solr_itr = SlowSolrDocs(solr_conn, args['solr_query'], rows=args['rows_per_page'], fl=solr_fields, fq=solr_filter)
+        solr_itr = SlowSolrDocs(solr_conn, args['solr_query'], rows=args['rows_per_page'], fl=solr_fields,
+                                fq=solr_filter)
         es_actions = SolrEsWrapperIter(solr_itr, args['elasticsearch_index'], args['doc_type'], args['id_field'])
         elasticsearch.helpers.bulk(es_conn, es_actions)
     except KeyboardInterrupt:

@@ -1,5 +1,6 @@
 import pysolr
 
+
 class InvalidPagingConfigError(RuntimeError):
     def __init__(self, message):
         super(RuntimeError, self).__init__(message)
@@ -32,11 +33,11 @@ class _SolrCursorIter:
         self.max = response.hits
         return self
 
-    def next(self):
+    def __next__(self):
         try:
             if self.docs is not None:
                 try:
-                    return self.docs.next()
+                    return next(self.docs)
                 except StopIteration:
                     self.docs = None
             if self.docs is None:
@@ -49,12 +50,12 @@ class _SolrCursorIter:
                     self.docs = iter(response.docs)
                     self.lastCursorMark = self.cursorMark
                     self.cursorMark = response.nextCursorMark
-                    return self.docs.next()
+                    return next(self.docs)
                 else:
                     raise StopIteration()
         except pysolr.SolrError as e:
-            if "Cursor" in e.message:
-                raise InvalidPagingConfigError(e.message)
+            if "Cursor" in e.args[0]:
+                raise InvalidPagingConfigError(e.args)
             raise e
 
 
@@ -83,10 +84,10 @@ class _SolrPagingIter:
         self.max = response.hits
         return self
 
-    def next(self):
+    def __next__(self):
         if self.docs is not None:
             try:
-                return self.docs.next()
+                return next(self.docs)
             except StopIteration:
                 self.docs = None
         if self.docs is None:
@@ -96,9 +97,10 @@ class _SolrPagingIter:
                                                  start=(self.current - 1) * self.rows,
                                                  **self.options)
                 self.docs = iter(response.docs)
-                return self.docs.next()
+                return next(self.docs)
             else:
                 raise StopIteration()
 
-SolrDocs = _SolrCursorIter # recommended, see note for SolrCursorIter
+
+SolrDocs = _SolrCursorIter  # recommended, see note for SolrCursorIter
 SlowSolrDocs = _SolrPagingIter
