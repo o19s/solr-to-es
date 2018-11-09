@@ -16,7 +16,7 @@ class SolrEsWrapperIter:
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         doc = next(self.solr_itr)
         new_doc = dict()
         new_doc['_index'] = self.index
