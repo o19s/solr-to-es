@@ -4,7 +4,7 @@ This will migrate a Solr node to an Elasticsearch index.
 
 ## Requirements
 
-  * Python 2.7+
+  * Python 3+
     * elasticsearch
     * pysolr
 
@@ -41,7 +41,7 @@ solr-to-es.py localhost:8983/solr/select localhost:9200 es_index solr_docs
 
 ## Install
 
-To install you may need to install dependencies via `pip install pyandoc`.  Then run `python setup.py install` to install the script.
+Run `python setup.py install` to install the script.
 
 ### Demo
 
