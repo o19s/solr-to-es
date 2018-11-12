@@ -8,7 +8,7 @@ def read(fname):
 
 
 setup(name='solr-to-es',
-      version='0.2.1',
+      version='0.3.1',
       description='Export Solr Nodes to Elasticsearch Indexes',
       long_description=read('README.md'),
       long_description_content_type='text/markdown',
@@ -21,7 +21,7 @@ setup(name='solr-to-es',
               'solr-to-es=solr_to_es.__main__:main'
           ]
       },
-      install_requires=['elasticsearch>=6.0.0,<7.0.0',
+      install_requires=['elasticsearch>=5.0.0,<6.0.0',
                         'pysolr>=3.3.3,<4.0'],
       license='Apache License, Version 2.0',
       classifiers=[
