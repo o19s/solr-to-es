@@ -1,4 +1,4 @@
-from solrTest import SolrIntegrationTest
+from tests.solrTest import SolrIntegrationTest
 from solr_to_es.solrSource import SolrDocs, InvalidPagingConfigError
 
 
