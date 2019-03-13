@@ -3,7 +3,7 @@ import argparse
 from elasticsearch import Elasticsearch
 import elasticsearch.helpers
 import pysolr
-from solrSource import SlowSolrDocs
+from solr_to_es.solrSource import SlowSolrDocs
 
 
 class SolrEsWrapperIter:
