@@ -1,5 +1,5 @@
 import pysolr
-
+import requests
 
 class InvalidPagingConfigError(RuntimeError):
     def __init__(self, message):
@@ -66,23 +66,33 @@ class _SolrPagingIter:
         See graph here:
         http://opensourceconnections.com/blog/2014/07/13/reindexing-collections-with-solrs-cursor-support/
         """
-    def __init__(self, solr_conn, query, **options):
+    def __init__(self, solr_url,query, **options):
         self.current = 0
         self.query = query
-        self.solr_conn = solr_conn
+        self.solr_url = solr_url
+        
         try:
             self.rows = options['rows']
             del options['rows']
         except KeyError:
             self.rows = 0
+        
+        try:
+            self.fl = options['fl']
+            del options['fl']
+        except KeyError:
+            self.fl = None
+
         self.options = options
         self.max = None
         self.docs = None
 
     def __iter__(self):
-        response = self.solr_conn.search(self.query, rows=0, **self.options)
-        self.max = response.hits
-        return self
+        r = requests.get(self.solr_url+'/select?q=' + self.query + '&rows=0')
+        response = r.json()
+        self.max = response['response']['numFound']
+        print("Found %s docs" % self.max)
+        return self        
 
     def __next__(self):
         if self.docs is not None:
@@ -93,10 +103,13 @@ class _SolrPagingIter:
         if self.docs is None:
             if self.current * self.rows < self.max:
                 self.current += 1
-                response = self.solr_conn.search(self.query, rows=self.rows,
-                                                 start=(self.current - 1) * self.rows,
-                                                 **self.options)
-                self.docs = iter(response.docs)
+                url = self.solr_url+ '/select?q=' + self.query + '&rows=' + str(self.rows) + "&start=" + str(((self.current - 1) * self.rows))
+                if self.fl:
+                    url = url + "&fl=" + (','.join(self.fl))
+                print(url)
+                r = requests.get(url)
+                response = r.json()
+                self.docs = iter(response['response']['docs'])
                 return next(self.docs)
             else:
                 raise StopIteration()
