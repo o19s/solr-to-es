@@ -1,4 +1,3 @@
-import pysolr
 import requests
 
 class InvalidPagingConfigError(RuntimeError):
