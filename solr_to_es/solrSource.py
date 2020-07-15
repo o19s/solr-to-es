@@ -104,8 +104,7 @@ class _SolrPagingIter:
                 self.current += 1
                 url = self.solr_url+ '/select?q=' + self.query + '&rows=' + str(self.rows) + "&start=" + str(((self.current - 1) * self.rows))
                 if self.fl:
-                    url = url + "&fl=" + (','.join(self.fl))
-                print(url)
+                    url = url + "&fl=" + (','.join(self.fl))                
                 r = requests.get(url)
                 response = r.json()
                 self.docs = iter(response['response']['docs'])
