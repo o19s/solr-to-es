@@ -21,8 +21,7 @@ setup(name='solr-to-es',
               'solr-to-es=solr_to_es.__main__:main'
           ]
       },
-      install_requires=['elasticsearch>=6.0.0,<7.0.0',
-                        'pysolr>=3.3.3,<4.0'],
+      install_requires=['elasticsearch>=6.0.0,<7.0.0'],
       license='Apache License, Version 2.0',
       classifiers=[
           'Development Status :: 3 - Alpha',
