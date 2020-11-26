@@ -2,7 +2,8 @@ from __future__ import print_function
 import argparse
 from elasticsearch import Elasticsearch
 import elasticsearch.helpers
-from solrSource import SlowSolrDocs
+from solr_to_es.solrSource import SlowSolrDocs
+import pysolr
 
 
 class SolrEsWrapperIter:
