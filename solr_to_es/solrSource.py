@@ -87,7 +87,7 @@ class _SolrPagingIter:
         self.docs = None
 
     def __iter__(self):
-        r = requests.get(self.solr_url+'/select?q=' + self.query + '&rows=0')
+        r = requests.get(self.solr_url+'/select?q=' + self.query + '&wt=json&rows=0')
         response = r.json()
         self.max = response['response']['numFound']
         print("Found %s docs" % self.max)
@@ -102,7 +102,7 @@ class _SolrPagingIter:
         if self.docs is None:
             if self.current * self.rows < self.max:
                 self.current += 1
-                url = self.solr_url+ '/select?q=' + self.query + '&rows=' + str(self.rows) + "&start=" + str(((self.current - 1) * self.rows))
+                url = self.solr_url+ '/select?q=' + self.query + '&wt=json&rows=' + str(self.rows) + "&start=" + str(((self.current - 1) * self.rows))
                 if self.fl:
                     url = url + "&fl=" + (','.join(self.fl))                
                 r = requests.get(url)
