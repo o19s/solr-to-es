@@ -38,6 +38,10 @@ solr-to-es http://localhost:8983/solr/<<collection_name>> http://localhost:9200 
 
 `--es-timeout` defaults to `60`
 
+`--es-user` for authentication in Elasticsearch
+
+`--es-password` for authentication in Elasticsearch
+
 
 ## Install
 

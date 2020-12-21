@@ -65,13 +65,24 @@ def parse_args():
                         type=int,
                         default=60)
 
+    parser.add_argument('--es-user',
+                        type=str,
+                        default='')
+
+    parser.add_argument('--es-password',
+                        type=str,
+                        default=None)
+
     return vars(parser.parse_args())
 
 
 def main():
     try:
         args = parse_args()
-        es_conn = Elasticsearch(hosts=args['elasticsearch_url'], timeout=args['es_timeout'])
+        if args['es_user']:
+            es_conn = Elasticsearch(hosts=args['elasticsearch_url'], timeout=args['es_timeout'], http_auth=(args['es_user'], args['es_password']))
+        else:
+            es_conn = Elasticsearch(hosts=args['elasticsearch_url'], timeout=args['es_timeout'])
 
         # Split the solr_url into the root and the request handler
         solr_conn = pysolr.Solr(args['solr_url'].rsplit('/', 1)[0], search_handler=args['solr_url'].rsplit('/', 1)[-1])
