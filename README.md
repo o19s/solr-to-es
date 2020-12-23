@@ -38,6 +38,13 @@ solr-to-es http://localhost:8983/solr/<<collection_name>> http://localhost:9200 
 
 `--es-timeout` defaults to `60`
 
+`--es-user` for authentication in Elasticsearch
+
+`--es-password` for authentication in Elasticsearch
+
+`--es-max-retries` maximum number of times a document will be retried when 429 is received, set to 0 for no retries on 429
+
+`--es-initial-backoff` number of seconds we should wait before the first retry. Any subsequent retries will be powers of initial_backoff * 2**retry_number
 
 ## Install
 

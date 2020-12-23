@@ -5,6 +5,9 @@ import elasticsearch.helpers
 from solr_to_es.solrSource import SlowSolrDocs
 import pysolr
 
+DEFAULT_ES_MAX_RETRIES = 15
+DEFAULT_ES_INITIAL_BACKOFF = 3
+
 
 class SolrEsWrapperIter:
     def __init__(self, solr_itr, es_index, es_type, id_field=None):
@@ -65,13 +68,34 @@ def parse_args():
                         type=int,
                         default=60)
 
+    parser.add_argument('--es-user',
+                        type=str,
+                        default='')
+
+    parser.add_argument('--es-password',
+                        type=str,
+                        default='')
+
+    parser.add_argument('--es-max-retries',
+                        type=int,
+                        default=DEFAULT_ES_MAX_RETRIES,
+                        help='maximum number of times a document will be retried when 429 is received, set to 0 for no retries on 429. default {}'.format(DEFAULT_ES_MAX_RETRIES))
+
+    parser.add_argument('--es-initial-backoff',
+                        type=int,
+                        default=DEFAULT_ES_INITIAL_BACKOFF,
+                        help='number of seconds we should wait before the first retry. Any subsequent retries will be powers of initial_backoff * 2**retry_number. default {}'.format(DEFAULT_ES_INITIAL_BACKOFF))
+
     return vars(parser.parse_args())
 
 
 def main():
     try:
         args = parse_args()
-        es_conn = Elasticsearch(hosts=args['elasticsearch_url'], timeout=args['es_timeout'])
+        if args['es_user']:
+            es_conn = Elasticsearch(hosts=args['elasticsearch_url'], timeout=args['es_timeout'], http_auth=(args['es_user'], args['es_password']))
+        else:
+            es_conn = Elasticsearch(hosts=args['elasticsearch_url'], timeout=args['es_timeout'])
 
         # Split the solr_url into the root and the request handler
         solr_conn = pysolr.Solr(args['solr_url'].rsplit('/', 1)[0], search_handler=args['solr_url'].rsplit('/', 1)[-1])
@@ -80,7 +104,10 @@ def main():
         solr_itr = SlowSolrDocs(args['solr_url'], args['solr_query'], rows=args['rows_per_page'], fl=solr_fields,
                                 fq=solr_filter)
         es_actions = SolrEsWrapperIter(solr_itr, args['elasticsearch_index'], args['doc_type'], args['id_field'])
-        elasticsearch.helpers.bulk(es_conn, es_actions)
+        for ok, item in elasticsearch.helpers.streaming_bulk(es_conn, es_actions, max_retries=args['es_max_retries'], initial_backoff=args['es_initial_backoff']):
+            if not ok:
+                errors.append(item)
+
     except KeyboardInterrupt:
         print('Interrupted')
 
