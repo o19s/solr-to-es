@@ -4,6 +4,8 @@ from elasticsearch import Elasticsearch
 import elasticsearch.helpers
 from solr_to_es.solrSource import SlowSolrDocs
 import pysolr
+import requests
+
 
 DEFAULT_ES_MAX_RETRIES = 15
 DEFAULT_ES_INITIAL_BACKOFF = 3
@@ -97,8 +99,12 @@ def main():
         else:
             es_conn = Elasticsearch(hosts=args['elasticsearch_url'], timeout=args['es_timeout'])
 
-        # Split the solr_url into the root and the request handler
-        solr_conn = pysolr.Solr(args['solr_url'].rsplit('/', 1)[0], search_handler=args['solr_url'].rsplit('/', 1)[-1])
+        # append /select to the solr URL if needed
+        test_solr_query = dict(q="*", wt="json")
+        response = requests.get(args['solr_url'], params=test_solr_query)
+        if response.status_code != 200 or "responseHeader" not in response.json():
+            args['solr_url'] = "/".join(args['solr_url'], "select")
+
         solr_fields = args['solr_fields'].split() if args['solr_fields'] else ''
         solr_filter = args['solr_filter'] if args['solr_filter'] else ''
         solr_itr = SlowSolrDocs(args['solr_url'], args['solr_query'], rows=args['rows_per_page'], fl=solr_fields,
